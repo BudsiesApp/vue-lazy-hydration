@@ -4,20 +4,23 @@ const observerConfig = { attributes: false, childList: true, subtree: true };
 export function makeHydrationPromise(wrapperInstance) {
   let hydrate = () => { };
 
-  let injectedElementsObserver = new MutationObserver((mutations) => {
-    for (const mutation of mutations) {
-      if (mutation.type !== "childList") {
-        continue;
-      }
+  let injectedElementsObserver =
+    typeof window !== 'undefined'
+      ? new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          if (mutation.type !== "childList") {
+            continue;
+          }
 
-      for (const node of mutation.addedNodes) {
-        if (node.getAttribute && node.hasAttribute(injectedElementAttribute)) {
-          node.remove();
+          for (const node of mutation.addedNodes) {
+            if (node.getAttribute && node.hasAttribute(injectedElementAttribute)) {
+              node.remove();
+            }
+          }
         }
-      }
-    }
 
-  });
+      })
+      : undefined;
 
   function destroyObserver() {
     if (!injectedElementsObserver) {
@@ -25,7 +28,7 @@ export function makeHydrationPromise(wrapperInstance) {
     }
 
     injectedElementsObserver.disconnect();
-    injectedElementsObserver = null;
+    injectedElementsObserver = undefined;
   }
 
   const hydrationPromise = new Promise((resolve) => {
