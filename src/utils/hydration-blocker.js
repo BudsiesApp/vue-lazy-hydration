@@ -84,9 +84,10 @@ export function makeHydrationBlocker(component, options) {
       },
       render(h) {
         return h(this.Nonce, {
-          attrs: this.$attrs,
+          attrs: { ...this.$attrs },
           on: { ...this.$listeners, 'hook:mounted': this.cleanup },
           scopedSlots: this.$scopedSlots,
+          directives: this.$vnode.data.directives,
         }, this.$slots.default);
       },
     }],
