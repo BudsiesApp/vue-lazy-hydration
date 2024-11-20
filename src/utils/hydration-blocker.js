@@ -7,10 +7,11 @@ export function makeHydrationBlocker(component, options) {
     mixins: [{
       beforeCreate() {
         this.cleanupHandlers = [];
-        const { hydrate, hydrationPromise } = makeHydrationPromise();
+        const { hydrate, hydrationPromise, destroyObserver } = makeHydrationPromise();
         this.Nonce = makeNonce({ component, hydrationPromise });
         this.hydrate = hydrate;
         this.hydrationPromise = hydrationPromise;
+        this.cleanupHandlers.push(destroyObserver);
       },
       beforeDestroy() {
         this.cleanup();
@@ -37,7 +38,7 @@ export function makeHydrationBlocker(component, options) {
           this.$el.hydrate = this.hydrate;
           const cleanup = () => observer.unobserve(this.$el);
           this.cleanupHandlers.push(cleanup);
-          this.hydrationPromise.then(cleanup);
+          this.hydrationPromise;
           observer.observe(this.$el);
           return;
         }
@@ -57,7 +58,7 @@ export function makeHydrationBlocker(component, options) {
           // @ts-ignore
           const cleanup = () => cancelIdleCallback(id);
           this.cleanupHandlers.push(cleanup);
-          this.hydrationPromise.then(cleanup);
+          this.hydrationPromise;
         }
 
         if (this.interactionEvents && this.interactionEvents.length) {
@@ -84,7 +85,7 @@ export function makeHydrationBlocker(component, options) {
       render(h) {
         return h(this.Nonce, {
           attrs: this.$attrs,
-          on: this.$listeners,
+          on: { ...this.$listeners, 'hook:mounted': this.cleanup },
           scopedSlots: this.$scopedSlots,
         }, this.$slots.default);
       },
