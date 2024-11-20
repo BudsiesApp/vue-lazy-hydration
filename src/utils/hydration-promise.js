@@ -35,7 +35,7 @@ export function makeHydrationPromise(wrapperInstance) {
     hydrate = () => {
       const hydratedComponentRootElement = wrapperInstance.$el;
 
-      if (!hydratedComponentRootElement) {
+      if (!hydratedComponentRootElement || typeof hydratedComponentRootElement !== 'function') {
         resolve();
         return;
       }
