@@ -80,6 +80,7 @@ export function makeHydrationBlocker(component, options) {
       methods: {
         cleanup() {
           this.cleanupHandlers.forEach(handler => handler());
+          this.cleanupHandlers = [];
         },
       },
       render(h) {
