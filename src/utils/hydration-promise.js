@@ -35,7 +35,7 @@ export function makeHydrationPromise(wrapperInstance) {
     hydrate = () => {
       const hydratedComponentRootElement = wrapperInstance.$el;
 
-      if (!hydratedComponentRootElement || typeof hydratedComponentRootElement !== 'function') {
+      if (!hydratedComponentRootElement || typeof hydratedComponentRootElement.querySelectorAll !== 'function') {
         resolve();
         return;
       }
@@ -45,7 +45,7 @@ export function makeHydrationPromise(wrapperInstance) {
         `[${injectedElementAttribute}]`
       );
 
-      for (const element in injectedElements) {
+      for (const element of injectedElements) {
         element.remove();
       }
 
