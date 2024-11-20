@@ -7,7 +7,7 @@ export function makeHydrationBlocker(component, options) {
     mixins: [{
       beforeCreate() {
         this.cleanupHandlers = [];
-        const { hydrate, hydrationPromise, destroyObserver } = makeHydrationPromise();
+        const { hydrate, hydrationPromise, destroyObserver } = makeHydrationPromise(this);
         this.Nonce = makeNonce({ component, hydrationPromise });
         this.hydrate = hydrate;
         this.hydrationPromise = hydrationPromise;
