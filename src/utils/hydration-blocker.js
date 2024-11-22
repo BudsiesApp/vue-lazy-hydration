@@ -7,10 +7,10 @@ export function makeHydrationBlocker(component, options) {
     mixins: [{
       beforeCreate() {
         this.cleanupHandlers = [];
-        const { hydrate, hydrationPromise } = makeHydrationPromise();
+        const { hydrate, hydrationPromise, destroyObserver } = makeHydrationPromise(this);
         this.Nonce = makeNonce({ component, hydrationPromise });
         this.hydrate = hydrate;
-        this.hydrationPromise = hydrationPromise;
+        this.cleanupHandlers.push(destroyObserver);
       },
       beforeDestroy() {
         this.cleanup();
@@ -37,7 +37,6 @@ export function makeHydrationBlocker(component, options) {
           this.$el.hydrate = this.hydrate;
           const cleanup = () => observer.unobserve(this.$el);
           this.cleanupHandlers.push(cleanup);
-          this.hydrationPromise.then(cleanup);
           observer.observe(this.$el);
           return;
         }
@@ -57,7 +56,6 @@ export function makeHydrationBlocker(component, options) {
           // @ts-ignore
           const cleanup = () => cancelIdleCallback(id);
           this.cleanupHandlers.push(cleanup);
-          this.hydrationPromise.then(cleanup);
         }
 
         if (this.interactionEvents && this.interactionEvents.length) {
@@ -79,13 +77,15 @@ export function makeHydrationBlocker(component, options) {
       methods: {
         cleanup() {
           this.cleanupHandlers.forEach(handler => handler());
+          this.cleanupHandlers = [];
         },
       },
       render(h) {
         return h(this.Nonce, {
-          attrs: this.$attrs,
-          on: this.$listeners,
+          attrs: { ...this.$attrs },
+          on: { ...this.$listeners, 'hook:mounted': this.cleanup },
           scopedSlots: this.$scopedSlots,
+          directives: this.$vnode.data.directives,
         }, this.$slots.default);
       },
     }],
