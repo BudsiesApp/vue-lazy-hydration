@@ -1,23 +1,24 @@
-const injectedElementAttribute = 'data-lastpass-icon-root';
+const unwantedElementsAttribute = 'data-lastpass-icon-root';
 const observerConfig = { attributes: false, childList: true, subtree: true };
 
 function mutationObserverFactory() {
-  return typeof MutationObserver !== 'undefined'
-    ? new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type !== "childList") {
-          continue;
-        }
+  if (typeof MutationObserver === 'undefined') {
+    return;
+  }
 
-        for (const node of mutation.addedNodes) {
-          if (node.getAttribute && node.hasAttribute(injectedElementAttribute)) {
-            node.remove();
-          }
-        }
+  return new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.type !== "childList") {
+        continue;
       }
 
-    })
-    : undefined;
+      for (const node of mutation.addedNodes) {
+        if (node.getAttribute && node.hasAttribute(unwantedElementsAttribute)) {
+          node.remove();
+        }
+      }
+    }
+  });
 }
 
 export function makeHydrationPromise(wrapperInstance) {
@@ -52,7 +53,7 @@ export function makeHydrationPromise(wrapperInstance) {
 
       injectedElementsObserver.observe(hydratedComponentRootElement, observerConfig);
       const injectedElements = hydratedComponentRootElement.querySelectorAll(
-        `[${injectedElementAttribute}]`
+        `[${unwantedElementsAttribute}]`
       );
 
       for (const element of injectedElements) {

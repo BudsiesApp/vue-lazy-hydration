@@ -10,7 +10,6 @@ export function makeHydrationBlocker(component, options) {
         const { hydrate, hydrationPromise, destroyObserver } = makeHydrationPromise(this);
         this.Nonce = makeNonce({ component, hydrationPromise });
         this.hydrate = hydrate;
-        this.hydrationPromise = hydrationPromise;
         this.cleanupHandlers.push(destroyObserver);
       },
       beforeDestroy() {
@@ -38,7 +37,6 @@ export function makeHydrationBlocker(component, options) {
           this.$el.hydrate = this.hydrate;
           const cleanup = () => observer.unobserve(this.$el);
           this.cleanupHandlers.push(cleanup);
-          this.hydrationPromise;
           observer.observe(this.$el);
           return;
         }
@@ -58,7 +56,6 @@ export function makeHydrationBlocker(component, options) {
           // @ts-ignore
           const cleanup = () => cancelIdleCallback(id);
           this.cleanupHandlers.push(cleanup);
-          this.hydrationPromise;
         }
 
         if (this.interactionEvents && this.interactionEvents.length) {
